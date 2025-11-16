@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日心情记录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            animation: containerSlideIn 0.5s ease-out;
+        }
+
+        @keyframes containerSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff9a8b 0%, #ff7e5f 100%);
+            color: white;
+            padding: 24px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 0;
+            background: white;
+            border-bottom: 1px solid #eee;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            background: white;
+            color: #666;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            font-weight: 500;
+        }
+
+        .nav-tab.active {
+            color: #ff7e5f;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(135deg, #ff9a8b 0%, #ff7e5f 100%);
+        }
+
+        .nav-tab:hover {
+            background: #f9f9f9;
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .mood-input-section {
+            padding: 30px 24px;
+        }
+
+        .date-display {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 24px;
+            font-weight: 500;
+        }
+
+        .mood-selector {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .mood-btn {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .mood-btn:hover {
+            transform: scale(1.08);
+            background: #f0f0f0;
+        }
+
+        .mood-btn.active {
+            border-color: #ff7e5f;
+            background: rgba(255, 126, 95, 0.1);
+            transform: scale(1.1);
+        }
+
+        .mood-label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .mood-btn.active .mood-label {
+            color: #ff7e5f;
+            font-weight: 600;
+        }
+
+        .description-group {
+            margin-bottom: 24px;
+        }
+
+        .description-label {
+            display: block;
+            font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .description-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid #ddd;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.3s ease;
+        }
+
+        .description-input:focus {
+            outline: none;
+            border-color: #ff7e5f;
+            box-shadow: 0 0 0 3px rgba(255, 126, 95, 0.1);
+        }
+
+        .description-input::placeholder {
+            color: #bbb;
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff9a8b 0%, #ff7e5f 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 126, 95, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        .submit-btn:active::before {
+            animation: ripple 0.6s ease-out;
+        }
+
+        @keyframes ripple {
+            to {
+                width: 400px;
+                height: 400px;
+                opacity: 0;
+            }
+        }
+
+        .success-message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4caf50;
+            color: white;
+            padding: 14px 20px;
+            border-radius: 8px;
+            animation: slideInRight 0.4s ease, slideOutRight 0.4s ease 2.6s;
+            z-index: 1000;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .history-section {
+            padding: 24px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .history-empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .history-empty-icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .history-empty-text {
+            font-size: 1rem;
+            color: #bbb;
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-item {
+            padding: 16px;
+            background: #f9f9f9;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid #ff7e5f;
+        }
+
+        .history-item:hover {
+            background: #f0f0f0;
+            transform: translateX(4px);
+        }
+
+        .history-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-item-date {
+            font-size: 0.9rem;
+            color: #999;
+            font-weight: 500;
+        }
+
+        .history-item-mood {
+            font-size: 1.5rem;
+        }
+
+        .history-item-mood-label {
+            font-size: 0.85rem;
+            color: #ff7e5f;
+            font-weight: 600;
+        }
+
+        .history-item-description {
+            font-size: 0.95rem;
+            color: #666;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalSlideUp 0.3s ease;
+        }
+
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #333;
+        }
+
+        .modal-body {
+            margin-bottom: 20px;
+        }
+
+        .modal-date {
+            font-size: 0.9rem;
+            color: #999;
+            margin-bottom: 12px;
+        }
+
+        .modal-mood {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .modal-mood-emoji {
+            font-size: 2rem;
+        }
+
+        .modal-mood-info h3 {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .modal-mood-info p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .modal-description {
+            background: #f9f9f9;
+            padding: 16px;
+            border-radius: 12px;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .modal-delete {
+            width: 100%;
+            padding: 12px;
+            background: #f5f5f5;
+            color: #d32f2f;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .modal-delete:hover {
+            background: #ffebee;
+            border-color: #d32f2f;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                border-radius: 16px;
+            }
+
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .mood-selector {
+                gap: 10px;
+            }
+
+            .mood-btn {
+                font-size: 1.5rem;
+            }
+
+            .mood-label {
+                font-size: 0.65rem;
+            }
+
+            .history-section {
+                max-height: 500px;
+            }
+
+            .modal-content {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💭 每日心情记录</h1>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" data-tab="record">
+                今日记录
+            </button>
+            <button class="nav-tab" data-tab="history">
+                历史记录
+            </button>
+        </div>
+
+        <div class="content-section active" id="record-section">
+            <div class="mood-input-section">
+                <div class="date-display" id="dateDisplay"></div>
+
+                <div class="mood-selector">
+                    <button class="mood-btn" data-mood="happy" title="开心">
+                        <span>😄</span>
+                        <span class="mood-label">开心</span>
+                    </button>
+                    <button class="mood-btn" data-mood="calm" title="平静">
+                        <span>😌</span>
+                        <span class="mood-label">平静</span>
+                    </button>
+                    <button class="mood-btn" data-mood="neutral" title="一般">
+                        <span>😐</span>
+                        <span class="mood-label">一般</span>
+                    </button>
+                    <button class="mood-btn" data-mood="sad" title="低落">
+                        <span>😢</span>
+                        <span class="mood-label">低落</span>
+                    </button>
+                    <button class="mood-btn" data-mood="angry" title="愤怒">
+                        <span>😠</span>
+                        <span class="mood-label">愤怒</span>
+                    </button>
+                </div>
+
+                <div class="description-group">
+                    <label class="description-label">简短描述（可选）</label>
+                    <textarea
+                        class="description-input"
+                        id="descriptionInput"
+                        placeholder="分享一下今天发生了什么，或者你的感受吧..."
+                        maxlength="500"
+                    ></textarea>
+                </div>
+
+                <button class="submit-btn" id="submitBtn">提交记录</button>
+            </div>
+        </div>
+
+        <div class="content-section" id="history-section">
+            <div class="history-section">
+                <div class="history-empty" id="historyEmpty">
+                    <div class="history-empty-icon">📝</div>
+                    <div class="history-empty-text">还没有记录呢，开始记录今天的心情吧！</div>
+                </div>
+                <div class="history-list" id="historyList"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle"></div>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-date" id="modalDate"></div>
+                <div class="modal-mood" id="modalMood"></div>
+                <div class="modal-description" id="modalDescription"></div>
+            </div>
+            <button class="modal-delete" id="modalDelete">删除记录</button>
+        </div>
+    </div>
+
+    <script>
+        const moodConfig = {
+            happy: { emoji: '😄', label: '开心', color: '#FFD93D' },
+            calm: { emoji: '😌', label: '平静', color: '#6BCB77' },
+            neutral: { emoji: '😐', label: '一般', color: '#4D96FF' },
+            sad: { emoji: '😢', label: '低落', color: '#9D84B7' },
+            angry: { emoji: '😠', label: '愤怒', color: '#FF6B6B' }
+        };
+
+        let currentMood = null;
+        let selectedRecord = null;
+        let records = [];
+
+        function init() {
+            loadRecords();
+            updateDateDisplay();
+            setupEventListeners();
+            renderHistoryList();
+        }
+
+        function loadRecords() {
+            const stored = localStorage.getItem('moodRecords');
+            records = stored ? JSON.parse(stored) : [];
+        }
+
+        function saveRecords() {
+            localStorage.setItem('moodRecords', JSON.stringify(records));
+        }
+
+        function updateDateDisplay() {
+            const today = new Date();
+            const dateString = today.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            document.getElementById('dateDisplay').textContent = dateString;
+        }
+
+        function setupEventListeners() {
+            // Tab navigation
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+
+            // Mood selection
+            document.querySelectorAll('.mood-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMood = btn.dataset.mood;
+                });
+            });
+
+            // Submit button
+            document.getElementById('submitBtn').addEventListener('click', submitRecord);
+
+            // Modal close
+            document.getElementById('modalClose').addEventListener('click', closeModal);
+            document.getElementById('detailModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('detailModal')) {
+                    closeModal();
+                }
+            });
+
+            // Modal delete
+            document.getElementById('modalDelete').addEventListener('click', deleteRecord);
+        }
+
+        function switchTab(tabName) {
+            // Update active tab
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.tab === tabName) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Update active section
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`${tabName}-section`).classList.add('active');
+
+            // Refresh history when switching to history tab
+            if (tabName === 'history') {
+                renderHistoryList();
+            }
+        }
+
+        function submitRecord() {
+            if (!currentMood) {
+                alert('请选择一个心情标识');
+                return;
+            }
+
+            const description = document.getElementById('descriptionInput').value.trim();
+            const today = new Date().toISOString().split('T')[0];
+
+            const record = {
+                id: Date.now(),
+                date: today,
+                mood: currentMood,
+                description: description,
+                timestamp: new Date().getTime()
+            };
+
+            records.push(record);
+            saveRecords();
+
+            // Reset form
+            currentMood = null;
+            document.querySelectorAll('.mood-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('descriptionInput').value = '';
+
+            // Show success message
+            showSuccessMessage('记录已保存！');
+
+            // Switch to history tab to see the new record
+            setTimeout(() => {
+                switchTab('history');
+            }, 500);
+        }
+
+        function showSuccessMessage(message) {
+            const msg = document.createElement('div');
+            msg.className = 'success-message';
+            msg.textContent = message;
+            document.body.appendChild(msg);
+            setTimeout(() => msg.remove(), 3000);
+        }
+
+        function renderHistoryList() {
+            const historyList = document.getElementById('historyList');
+            const historyEmpty = document.getElementById('historyEmpty');
+
+            historyList.innerHTML = '';
+
+            if (records.length === 0) {
+                historyEmpty.style.display = 'block';
+                historyList.style.display = 'none';
+                return;
+            }
+
+            historyEmpty.style.display = 'none';
+            historyList.style.display = 'flex';
+
+            // Sort by date descending
+            const sorted = [...records].sort((a, b) => b.timestamp - a.timestamp);
+
+            sorted.forEach(record => {
+                const item = document.createElement('div');
+                item.className = 'history-item';
+
+                const config = moodConfig[record.mood];
+                const dateObj = new Date(record.date);
+                const dateString = dateObj.toLocaleDateString('zh-CN', {
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+
+                const descriptionPreview = record.description || '（无描述）';
+
+                item.innerHTML = `
+                    <div class="history-item-header">
+                        <span class="history-item-date">${dateString}</span>
+                        <div>
+                            <span class="history-item-mood">${config.emoji}</span>
+                            <span class="history-item-mood-label">${config.label}</span>
+                        </div>
+                    </div>
+                    <div class="history-item-description">${descriptionPreview}</div>
+                `;
+
+                item.addEventListener('click', () => openModal(record));
+                historyList.appendChild(item);
+            });
+        }
+
+        function openModal(record) {
+            selectedRecord = record;
+            const config = moodConfig[record.mood];
+            const dateObj = new Date(record.date);
+            const dateString = dateObj.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+
+            document.getElementById('modalTitle').textContent = config.label;
+            document.getElementById('modalDate').textContent = dateString;
+            document.getElementById('modalMood').innerHTML = `
+                <span class="modal-mood-emoji">${config.emoji}</span>
+                <div class="modal-mood-info">
+                    <h3>${config.label}</h3>
+                    <p>记录于 ${new Date(record.timestamp).toLocaleTimeString('zh-CN')}</p>
+                </div>
+            `;
+            document.getElementById('modalDescription').textContent = record.description || '暂无描述';
+
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+            selectedRecord = null;
+        }
+
+        function deleteRecord() {
+            if (!selectedRecord) return;
+
+            if (confirm('确定要删除这条记录吗？')) {
+                records = records.filter(r => r.id !== selectedRecord.id);
+                saveRecords();
+                closeModal();
+                renderHistoryList();
+                showSuccessMessage('记录已删除！');
+            }
+        }
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
